@@ -91,11 +91,11 @@ class WaveNetModel(nn.Module):
                                                    bias=bias))
 
                 gate_temp_conv = nn.Conv1d(in_channels=residual_channels,
-                                            out_channels=dilation_channels,
-                                            kernel_size=kernel_size,
-                                            bias=bias)
+                                           out_channels=dilation_channels,
+                                           kernel_size=kernel_size,
+                                           bias=bias)
                 if DIFFERENT_INITIALIZATIONS:
-
+                    init.normal(gate_temp_conv.weight, mean=0, std=4.0 / math.sqrt(kernel_size))
 
                 self.gate_convs.append(gate_temp_conv)
 

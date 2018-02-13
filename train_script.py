@@ -5,6 +5,7 @@ from wavenet_training import *
 from model_logging import *
 from scipy.io import wavfile
 from argparse import ArgumentParser
+import os
 
 parser = ArgumentParser()
 
@@ -75,6 +76,9 @@ gain = ''
 if args.cs:
     cs = 'cs'
     gain = args.gain_factor
+
+if not os.path.exists('snapshots{}{}'.format(cs, gain)):
+    os.mkdir('snapshots{}{}'.format(cs, gain))
 
 logger = TensorboardLogger(log_interval=200,
                            validation_interval=400,

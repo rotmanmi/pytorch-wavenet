@@ -86,17 +86,21 @@ class WaveNetModel(nn.Module):
                                                         dtype=dtype))
 
                 # dilated convolutions
-                self.filter_convs.append(nn.Conv1d(in_channels=residual_channels,
-                                                   out_channels=dilation_channels,
-                                                   kernel_size=kernel_size,
-                                                   bias=bias))
+                filter_temp_conv = nn.Conv1d(in_channels=residual_channels,
+                                             out_channels=dilation_channels,
+                                             kernel_size=kernel_size,
+                                             bias=bias)
+                if args.cs:
+                    init.normal(filter_temp_conv.weight, mean=0, std=args.gain_factor / math.sqrt(kernel_size))
+
+                self.filter_convs.append(filter_temp_conv)
 
                 gate_temp_conv = nn.Conv1d(in_channels=residual_channels,
                                            out_channels=dilation_channels,
                                            kernel_size=kernel_size,
                                            bias=bias)
                 if args.cs:
-                    init.normal(gate_temp_conv.weight, mean=0, std=args.gain_factor / math.sqrt(kernel_size))
+                    init.constant(gate_temp_conv.weight, 0)
 
                 self.gate_convs.append(gate_temp_conv)
 

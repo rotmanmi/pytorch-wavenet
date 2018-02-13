@@ -40,7 +40,8 @@ class WaveNetModel(nn.Module):
                  output_length=32,
                  kernel_size=2,
                  dtype=torch.FloatTensor,
-                 bias=False):
+                 bias=False,
+                 args=None):
 
         super(WaveNetModel, self).__init__()
 
@@ -94,8 +95,8 @@ class WaveNetModel(nn.Module):
                                            out_channels=dilation_channels,
                                            kernel_size=kernel_size,
                                            bias=bias)
-                if DIFFERENT_INITIALIZATIONS:
-                    init.normal(gate_temp_conv.weight, mean=0, std=4.0 / math.sqrt(kernel_size))
+                if args.cs:
+                    init.normal(gate_temp_conv.weight, mean=0, std=args.gain_factor / math.sqrt(kernel_size))
 
                 self.gate_convs.append(gate_temp_conv)
 

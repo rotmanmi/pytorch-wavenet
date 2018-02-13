@@ -4,6 +4,14 @@ from audio_data import WavenetDataset
 from wavenet_training import *
 from model_logging import *
 from scipy.io import wavfile
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+
+parser.add_argument('--cs', action='store_true')
+parser.add_argument('--gain_factor', type=float, default=1.0)
+
+args = parser.parse_args()
 
 dtype = torch.FloatTensor
 ltype = torch.LongTensor
@@ -22,10 +30,11 @@ model = WaveNetModel(layers=10,
                      end_channels=512,
                      output_length=16,
                      dtype=dtype,
-                     bias=True)
+                     bias=True,
+                     args=args)
 
-#model = load_latest_model_from('snapshots', use_cuda=True)
-#model = torch.load('snapshots/some_model')
+# model = load_latest_model_from('snapshots', use_cuda=True)
+# model = torch.load('snapshots/some_model')
 
 if use_cuda:
     print("move model to gpu")
@@ -44,7 +53,7 @@ print('the dataset has ' + str(len(data)) + ' items')
 
 
 def generate_and_log_samples(step):
-    sample_length=32000
+    sample_length = 32000
     gen_model = load_latest_model_from('snapshots', use_cuda=False)
     print("start generating...")
     samples = generate_audio(gen_model,
@@ -61,18 +70,24 @@ def generate_and_log_samples(step):
     print("audio clips generated")
 
 
+cs = ''
+gain = ''
+if args.cs:
+    cs = 'cs'
+    gain = args.gain_factor
+
 logger = TensorboardLogger(log_interval=200,
                            validation_interval=400,
                            generate_interval=800,
                            generate_function=generate_and_log_samples,
-                           log_dir="logs/chaconne_model")
+                           log_dir="logs/chaconne_model{}{}".format(cs, gain))
 
 trainer = WavenetTrainer(model=model,
                          dataset=data,
                          lr=0.0001,
                          weight_decay=0.0,
-                         snapshot_path='snapshots',
-                         snapshot_name='chaconne_model',
+                         snapshot_path='snapshots{}{}'.format(cs, gain),
+                         snapshot_name='chaconne_model{}{}'.format(cs, gain),
                          snapshot_interval=1000,
                          logger=logger,
                          dtype=dtype,
